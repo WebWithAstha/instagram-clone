@@ -1,0 +1,76 @@
+<% include ./partials/header.ejs %>
+  <div class="w-full h-screen flex flex-col text-white bg-zinc-900 justify-center">
+    <div class="flex justify-between items-center relative px-2">
+      <a href="/feed"><i class="ri-arrow-left-s-line text-lg"></i></a>
+      <h1 class="text-center py-3 font-semibold text-lg">
+        <%=loggedUser.username%>
+      </h1>
+      <div class="icon">
+        <i class="ri-edit-box-line text-lg"></i>
+      </div>
+    </div>
+
+    <div class="border-2 border-zinc-800 flex items-center justify-between px-2 py-1 rounded-md">
+      <i class="text-white ri-search-line"></i>
+      <input class="input ml-1 w-full bg-zinc-900 outline-none text-zinc-400" type="text" placeholder="search username">
+    </div>
+    <div class="flex justify-between items-center px-3 mt-2">
+      <h2>Messages</h2>
+      <h2 class="text-blue-500">Requests</h2>
+    </div>
+    <div class="users flex-1 mt-3 overflow-y-auto">
+      <%allUsers.reverse().forEach(function(user){%>
+        <a href="/message/<%=user.username%>">
+          <div class="user hover:bg-zinc-700 cursor-pointer flex items-center justify-between px-3 py-3">
+            <div class="flex items-center gap-2">
+              <img  src="/images/uploads/<%=user.profileImg%>" alt="Profile Picture" class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <p class="font-semibold">
+                  <%=user.username%>
+                </p>
+                <p class="text-sm text-gray-500"><%=user.name%></p>
+              </div>
+            </div>
+            <i class="ri-instagram-line text-xl"></i>
+          </div>
+        </a>
+        <%})%>
+    </div>
+  </div>
+  <script>
+
+let inp = document.querySelector(".input")
+        inp.addEventListener("input", (dets) => {
+            if (inp.value !== '') {
+                fetch(`search/${inp.value}`)
+                .then(raw => raw.json())
+                .then((result) => {
+                        document.querySelector(".users").innerHTML = ""
+                        result.forEach((user) => {
+                          if(user.username !== '<%=loggedUser.username%>'){
+                          document.querySelector(".users").innerHTML += `
+                            <a href="/message/${user.username}">
+          <div class="user hover:bg-zinc-700 cursor-pointer flex items-center justify-between px-3 py-3">
+            <div class="flex items-center gap-2">
+              <img src="/images/uploads/${user.profileImg}" alt="Profile Picture" class="w-10 h-10 rounded-full object-cover">
+              <div>
+                <p class="font-semibold">
+                  ${user.username}
+                </p>
+                <p class="text-sm text-gray-500">${user.name}</p>
+              </div>
+            </div>
+            <i class="ri-instagram-line text-xl"></i>
+          </div>
+        </a>
+                        `
+                      }
+                        })
+                    })
+            }
+        })
+
+
+
+  </script>
+  <% include ./partials/footer.ejs %>

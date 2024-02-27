@@ -1,0 +1,305 @@
+<% include ./partials/header.ejs %>
+  <div class="w-full min-h-screen bg-zinc-900 text-white py-5 relative">
+    <div
+      class="share-overlay bg-zinc-800 w-full flex flex-col justify-between h-screen fixed top-0 left-0 z-20 transition-all translate-y-[100%] duration-500">
+      <h1 class="text-center w-full relative py-2 text-lg mb-2">Share
+        <i onclick="closeShare(this)" class="ri-close-line absolute top-2 right-3 text-2xl"></i>
+      </h1>
+      <div class="flex items-center px-4 mb-5">
+        <h2>To:</h2>
+        <input oninput="searchUsers(this)" type="text" class="w-full px-2 bg-transparent outline-none"
+          placeholder="Search...">
+      </div>
+      <h2 class="px-4 text-sm mb-3">Suggested</h2>
+      <div class="users overflow-y-auto flex-1">
+        <%allUsers.forEach(function(user){%>
+          <div class="user cursor-pointer flex items-center justify-between px-3 py-3">
+            <div class="flex items-center gap-2">
+              <img src="/images/uploads/<%=user.profileImg%>" alt="Profile Picture"
+                class="w-10 h-10 bg-purple-200 rounded-full">
+              <div>
+                <p class="font-semibold">
+                  <%=user.username%>
+                </p>
+                <p class="text-sm text-gray-500">
+                  <%=user.name%>
+                </p>
+              </div>
+            </div>
+            <button onclick="sendPost(this,'<%=user.username%>')"
+              class="bg-blue-500 px-2 py-1 text-sm rounded-md">send</button>
+          </div>
+          <%})%>
+
+
+
+      </div>
+    </div>
+
+    <div class="w-full px-4 flex items-center justify-between">
+      <img class="w-1/4" src="/images/logo.png" alt="">
+      <div class="icons -mt-2 flex gap-5 items-center">
+        <a href="/notification" class="relative">
+          <i class="text-[1.4rem] ri-heart-3-line"></i>
+          <%if(!isSeenAllNoti){%>
+            <i class="ri-circle-fill text-red-600 absolute text-md right-0 translate-x-[20%]"></i>
+            <%}%>
+        </a>
+        <a href="/inbox" class="relative">
+          <i class="text-[1.4rem] ri-messenger-line"></i>
+          <%if(!isSeenAllMsg){%>
+            <i class="ri-circle-fill text-red-600 absolute text-md right-0 translate-x-[20%]"></i>
+            <%}%>
+        </a>
+      </div>
+    </div>
+
+    <div class="story px-3 flex gap-3 overflow-auto mt-5">
+
+      <%if(loggedUser.stories.length===0){%>
+        <a href="/upload">
+          <%}else{%>
+            <a href="/user/<%=loggedUser.id%>/stories">
+              <%}%>
+                <div class="circle flex-shrink-0 relative">
+                  <div
+                    class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center">
+                    <div class="inner w-[92%] h-[92%] rounded-full overflow-hidden">
+                      <img data-userid="<%=loggedUser.id%>" class="userimg w-full h-full object-cover"
+                        src="/images/uploads/<%=loggedUser.profileImg%>" alt="">
+                    </div>
+                  </div>
+                  <i
+                    class="ri-add-circle-fill text-blue-500 absolute top-full left-full -translate-x-full -translate-y-full text-md"></i>
+                </div>
+            </a>
+
+            <%filteredStoryUsers.forEach(user=>{%>
+              <a href="/user/<%=user.user.id%>/stories">
+                <div class="circle flex-shrink-0">
+                  <div
+                    class="gradient w-[18vw] h-[18vw] bg-sky-100 rounded-full bg-gradient-to-r from-purple-700 to-orange-500 flex items-center justify-center">
+                    <div class="inner w-[92%] h-[92%] rounded-full overflow-hidden">
+                      <img data-userid="<%=user.user.id%>" class="userimg w-full h-full object-cover"
+                        src="/images/uploads/<%=user.user.profileImg%>" alt="">
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <%})%>
+    </div>
+    <div class="posts mb-20">
+      <%posts.reverse().forEach(post=>{%>
+        <div data-postid="<%=post._id%>" class="post mt-10 w-full min-h-[50vh]">
+          <div class="title px-4 flex items-center gap-2">
+            <a href="/profile/<%=post.user.username%>">
+              <div class="w-[8vw] h-[8vw] bg-sky-100 overflow-hidden rounded-full ">
+                <img class="w-full h-full object-cover" src="/images/uploads/<%= post.user.profileImg%>" alt="">
+              </div>
+            </a>
+            <h4 class="text-sm">
+              <%= post.user.username%>
+            </h4>
+            <h6 class="text-xs opacity-30">
+              <%=post.duration%>
+            </h6>
+          </div>
+          <div class="postimgparent h-96 mt-4 bg-sky-100 overflow-hidden relative">
+            <img class="postimg w-full h-full object-cover" src="/images/uploads/<%=post.media%>" alt="">
+          </div>
+          <div class="options w-full px-4 flex justify-between items-center text-[1.4rem]">
+            <div class="flex gap-3 mt-2">
+              <i
+                class="likeicon ri-heart-3-<%= post.likes.includes((loggedUser._id.toString())) ? 'fill text-red-700' : 'line text-white'%>"></i>
+              <i data-loggedUserImg='<%=loggedUser.profileImg%>' class="commenticon ri-chat-3-line"></i>
+              <i onclick="openShare('<%=post._id%>')" class="ri-share-circle-line"></i>
+            </div>
+            <i class="saveicon ri-bookmark-<%=loggedUser.savedPosts.includes(post._id)?'fill':'line'%>"></i>
+          </div>
+          <h3 class="px-4 mt-2 text-sm leading-none tracking-tight">
+            <%= post.likes.length%> likes
+          </h3>
+
+          <%if(post.comments.length>0){%>
+            <a href="/comment/<%=post._id%>" class="">
+              <h5 class="text-[3.3vw] mt-2 mx-4 w-max opacity-60">View <%=post.comments.length%> comments</h5>
+            </a>
+            <%}%>
+              <h2 class="text-white font-light text-sm mt-2"><span class="font-semibold pl-4 pr-2">
+                  <%= post.user.username%>
+                </span>
+                <%= post.caption%>
+              </h2>
+        </div>
+        <%})%>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
+    integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+
+
+
+
+    let flag = 0;
+    let postId;
+    document.querySelector(".posts").addEventListener("click", (dets) => {
+
+      if (dets.target.classList.contains("postimg")) {
+        likeAnimation(dets.target.parentNode.parentNode)
+      } else if (dets.target.classList.contains("likeicon")) {
+        likeAnimation(dets.target.parentNode.parentNode.parentNode)
+      }
+
+      if (dets.target.classList.contains("commenticon")) {
+        let post = dets.target.parentNode.parentNode.parentNode
+        let clutter = `
+              <div class="w-[8vw] h-[8vw] bg-sky-100 overflow-hidden rounded-full shrink-0">
+                <img src="/images/uploads/${dets.target.dataset.loggeduserimg}">
+              </div>
+              <div class=" border border-zinc-500 w-full rounded-md flex items-center">
+                <input name="comment" class="w-full bg-transparent p-2 outline-none text-white text-sm" type="text" placeholder="Add a comment...">
+                <button type="submit" class="text-blue-500 mr-2">
+                  post
+                </button>
+              </div>
+            `;
+        let commentSection = document.createElement('form')
+        commentSection.setAttribute('action', `/comment/${post.dataset.postid}`)
+        commentSection.setAttribute('method', 'post')
+        commentSection.setAttribute('class', 'comment w-full h-max py-3 flex items-center px-4 gap-2 bg-zinc-900')
+        commentSection.innerHTML = clutter;
+
+        if (flag === 0) {
+          post.insertBefore(commentSection, post.querySelector('h3'));
+          flag++;
+        }
+        else {
+          post.removeChild(post.querySelector('.comment'))
+          flag = 0
+        }
+
+
+
+      }
+
+      if (dets.target.classList.contains("saveicon")) {
+        if (dets.target.classList.contains("ri-bookmark-line")) {
+          dets.target.classList.remove("ri-bookmark-line")
+          dets.target.classList.add("ri-bookmark-fill")
+        } else {
+          dets.target.classList.remove("ri-bookmark-fill")
+          dets.target.classList.add("ri-bookmark-line")
+        }
+        fetch(`/save/${dets.target.parentNode.parentNode.dataset.postid}`)
+
+      }
+
+    })
+
+    function likeAnimation(post) {
+      let likeicon = post.querySelector(".likeicon")
+
+      fetch(`/like/${post.dataset.postid}`)
+        .then(raw => raw.json())
+        .then(response => {
+
+          if (likeicon.classList.contains("text-red-700")) {
+            likeicon.classList.add("text-white", "ri-heart-3-line")
+            likeicon.classList.remove("text-red-700", "ri-heart-3-fill")
+          } else {
+            likeicon.classList.add("text-red-700", "ri-heart-3-fill")
+            likeicon.classList.remove("text-white", "ri-heart-3-line")
+
+            var icon = document.createElement("i")
+            icon.setAttribute('class', `ri-heart-3-fill absolute text-red-600 top-1/2 left-1/2 -translate-x-[50%] -translate-y-[50%] text-[20vw]`)
+            post.querySelector('.postimgparent').appendChild(icon)
+
+            gsap.from(icon, {
+              opacity: 0,
+              ease: Expo,
+              scale: 0,
+              y: 50,
+              duration: .7,
+            })
+            gsap.to(icon, {
+              opacity: 0,
+              ease: Expo,
+              scale: .6,
+              y: -60,
+              delay: .7,
+              onComplete: () => post.querySelector('.postimgparent').removeChild(icon)
+
+            })
+          }
+          post.querySelector("h3").textContent = response.likes.length + " likes"
+        })
+
+    }
+
+    function closeShare() {
+      document.querySelector(".share-overlay").classList.add("translate-y-[100%]")
+      setTimeout(() => {
+        document.querySelectorAll(".share-overlay button").forEach(function(btn){
+          btn.textContent="send"
+          btn.className ="bg-blue-500 px-2 py-1 text-sm rounded-md"
+
+
+        })
+        
+      }, 500);
+    }
+    function openShare(id) {
+      postId = id;
+      document.querySelector(".share-overlay").classList.remove("translate-y-[100%]")
+
+    }
+
+    function sendPost(btn,username) {
+      fetch(`/sendpost/${postId}/${username}`)
+          btn.textContent = "sent"
+          btn.className ="bg-zinc-700 px-2 py-1 text-sm rounded-md"
+    }
+
+    function searchUsers(inp) {
+      if (inp.value !== '') {
+        fetch(`search/${inp.value}`)
+          .then(raw => raw.json())
+          .then((result) => {
+            document.querySelector(".users").innerHTML = ""
+            result.forEach((user) => {
+              if (user.username !== '<%=loggedUser.username%>') {
+                document.querySelector(".users").innerHTML += `
+                <div class="user cursor-pointer flex items-center justify-between px-3 py-3">
+            <div class="flex items-center gap-2">
+              <img src="/images/uploads/${user.profileImg}" alt="Profile Picture"
+                class="w-10 h-10 bg-purple-200 rounded-full">
+              <div>
+                <p class="font-semibold">
+                  ${user.username}
+                </p>
+                <p class="text-sm text-gray-500">
+                  ${user.name}
+                </p>
+              </div>
+            </div>
+            <button onclick="sendPost(this,'${user.username}')"
+              class="bg-blue-500 px-2 py-1 text-sm rounded-md">send</button>
+          </div>
+                        `
+              }
+
+            })
+          })
+      }
+
+
+
+    }
+
+
+
+  </script>
+  <% include ./partials/footer.ejs %>

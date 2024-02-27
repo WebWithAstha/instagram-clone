@@ -1,0 +1,154 @@
+<% include ./partials/header.ejs %>
+    <div class="w-full h-screen bg-zinc-900 text-white relative flex flex-col ">
+        <div class="chatheader w-full flex gap-2 items-center justify-between py-4 bg-zinc-800 mb-2  px-3">
+            <div class="flex items-center gap-2">
+                <a href="javascript:history.back()"><i class="ri-arrow-left-s-line text-2xl mr-2"></i></a>
+                <div class="w-[8vw] h-[8vw] bg-sky-100 overflow-hidden rounded-full ">
+                    <img class="w-full h-full object-cover" src="/images/uploads/<%=user.profileImg%>" alt="">
+                </div>
+                <h1>
+                    <%=user.username%>
+                </h1>
+            </div>
+            <i class="ri-information-line"></i>
+        </div>
+        <div class="chats grow w-full py-1 overflow-y-auto px-3">
+            <%chats.forEach(function(chat){%>
+
+                <%if(chat.sender===loggedUser.username){%>
+
+                    <%if(chat.post){%>
+                        <div class="w-40 overflow-hidden rounded-xl ml-auto py-2 mb-1.5 bg-blue-500">
+                            <div class="flex gap-1 mb-2 px-2 items-center">
+                                <div class="w-[8vw] h-[8vw] bg-sky-100 overflow-hidden rounded-full">
+
+                                    <img class="w-full h-full object-cover"
+                                        src="/images/uploads/<%=chat.post.user.profileImg%>" alt="">
+                                </div>
+                                <h2 class="text-sm">
+                                    <%=chat.post.user.username%>
+                                        </h1>
+                            </div>
+                            <img class="w-full h-40 shrink-1 object-cover mb-1.5"
+                                src="/images/uploads/<%=chat.post.media%>" alt="">
+                            <h2 class="text-[.8rem] leading-[1.2] px-2">
+                                <%=chat.post.caption%>
+                            </h2>
+
+                        </div>
+                        <%}else{%>
+                            <div class="outgoing bg-blue-500 w-fit max-w-[70%] p-1 px-3 rounded-3xl ml-auto mb-1.5">
+                                <%=chat.message%>
+                            </div>
+                            <%}%>
+
+                    <%}else{%>
+                        <div class="flex gap-1 mb-1.5 items-start">
+                           
+                            <%if(chat.post){%>
+                                <div class="w-[8vw] h-[8vw] bg-sky-100 overflow-hidden rounded-full mt-1.5 mr-.5">
+                                    <img class="w-full h-full object-cover" src="/images/uploads/<%=user.profileImg%>" alt="">
+                                </div>
+                                            <div
+                                                class="w-40 overflow-hidden rounded-xl py-2 mb-1.5 bg-zinc-700">
+                                                <div class="flex gap-1.5 mb-2 px-2 items-center">
+                                                    <div
+                                                        class="w-[8vw] h-[8vw] bg-sky-100 overflow-hidden rounded-full">
+
+                                                        <img class="w-full h-full object-cover"
+                                                            src="/images/uploads/<%=chat.post.user.profileImg%>" alt="">
+                                                    </div>
+                                                    <h2 class="text-sm">
+                                                        <%=chat.post.user.username%>
+                                                            </h2>
+                                                </div>
+                                                <a href="/post/<%=chat.post._id%>"><img class="w-full h-40 shrink-1 object-cover mb-1.5"
+                                                    src="/images/uploads/<%=chat.post.media%>" alt=""></a>
+                                                <h2 class="text-[.8rem] leading-[1.2] px-2">
+                                                    <%=chat.post.caption%>
+                                                </h2>
+
+                                            </div>
+                                            <%}else{%>
+                                                <div class="w-[8vw] h-[8vw] bg-sky-100 overflow-hidden rounded-full mr-.5">
+                                                    <img class="w-full h-full object-cover" src="/images/uploads/<%=user.profileImg%>" alt="">
+                                                </div>
+                                                <div
+                                                    class="incoming bg-zinc-700 w-fit max-w-[70%] p-1 px-3 rounded-2xl">
+                                                    <%=chat.message%>
+                                                </div>
+                                                <%}%>
+
+                                    </div>
+                                    <%}%>
+                                        <%})%>
+
+
+
+
+
+        </div>
+        <div class="input flex items-center border border-zinc-600 rounded-full mb-2">
+            <input onkeydown="onEnter(event)" class="w-full bg-transparent p-2 outline-none px-3"
+                placeholder="Message..." type="text">
+            <i onclick="sendMessage()" class="ri-send-plane-2-line text-xl px-1"></i>
+            <i class="ri-image-line text-xl px-1"></i>
+            <i class="ri-heart-line text-xl px-1 mr-3"></i>
+        </div>
+
+
+
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+        socket.emit('join-server', '<%=loggedUser.username%>')
+
+        function appendOutgoingMessage(msg) {
+
+            document.querySelector('.chats').innerHTML += `
+            <div class="outgoing bg-blue-500 w-fit max-w-[70%] p-1 px-3 rounded-3xl ml-auto mb-1.5">${msg}</div>
+            `
+        }
+        userprofile = '<%=user.profileImg%>'
+
+
+        function appendIncomingMessage(msg) {
+
+            document.querySelector('.chats').innerHTML += `
+            <div class="flex gap-1 mb-1.5 items-center">
+                <div class="w-[8vw] h-[8vw] bg-sky-100 overflow-hidden rounded-full ">
+                    <img class="w-full h-full object-cover" src="/images/uploads/${'<%=user.profileImg%>'}" alt="">
+                </div>
+                <div class="incoming bg-zinc-700 w-fit max-w-[70%] p-1 px-3 rounded-2xl">${msg}</div>
+            </div>
+            `
+        }
+
+        function sendMessage() {
+            const inp = document.querySelector('input')
+            if (inp.value === '') return
+            appendOutgoingMessage(inp.value)
+
+            socket.emit("send-private-message", {
+                sender: '<%=loggedUser.username%>',
+                receiver: '<%=user.username%>',
+                message: inp.value
+            })
+            inp.value = ''
+
+
+        }
+
+        function onEnter(event) {
+            if (event.keyCode === 13) {
+                sendMessage()
+            }
+        }
+        socket.on('receive-private-message', messageObject => {
+            appendIncomingMessage(messageObject.message)
+        })
+
+
+    </script>
+    <% include ./partials/footer.ejs %>

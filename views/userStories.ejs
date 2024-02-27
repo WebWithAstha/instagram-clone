@@ -1,0 +1,88 @@
+<% include ./partials/header.ejs %>
+
+    <div id="storypanel" class="w-screen h-screen bg-zinc-900 relative">
+
+
+        <div id="storyViewer" class="flex gap-1 px-1">
+            <%user.stories.reverse().forEach(function(story,index){%>
+                <div id="progressbar" class="w-full h-[1.3vw] bg-[rgba(1,1,1,.5)] rounded-full z-10 relative overflow-hidden">
+                    <div id="fill<%=index%>" data-storylen="<%=user.stories.length%>" class="h-full w-0 bg-white">
+                    </div>
+                </div>
+                <img src="/images/uploads/<%=story.media%>"
+                    class="storyimg<%=index%> w-full h-full object-cover absolute top-0 left-0 z-0" alt="">
+                <%})%>
+        </div>
+
+
+        <div class="title px-4 flex items-center gap-3 py-3 z-10 relative">
+            <div class="w-[10vw] h-[10vw] bg-sky-100 overflow-hidden rounded-full ">
+                <img class="w-full h-full object-cover" src="/images/uploads/<%=user.profileImg%>" alt="">
+            </div>
+            <h4 class="text-sm text-white font-semibold">
+                <%=user.username%>
+            </h4>
+
+        </div>
+        <a href="/feed"><i class="ri-close-fill text-white absolute top-6 right-4 text-2xl z-10 font-semibold"></i></a>
+
+
+
+    </div>
+
+    <script>
+
+
+
+        let len = parseInt(document.querySelector("#fill0").dataset.storylen); //3
+        
+        let interval;
+        let currentIndex; 
+
+        function progress(i) {
+
+            currentIndex = i;
+
+
+            if (i === len) {
+                document.querySelector('i').click()
+                return;
+            };
+
+
+            let prog = 0;
+            interval = setInterval(() => {
+                prog++;
+                document.querySelector(`#fill${i}`).style.width = prog + "%"
+                if (prog === 100) {
+                    clearInterval(interval)
+                    if (i !== len-1) {
+                        document.querySelector(`.storyimg${len-i-1}`).style.display = "none"
+                    }
+                    i++
+                    progress(i)
+                }
+
+            }, 20);
+
+        }
+        progress(0)
+
+
+        document.querySelector("#storyViewer").addEventListener("click", function (dets) {
+            if(currentIndex===len-1){
+                document.querySelector('i').click()
+                return;
+            }
+            clearInterval(interval)
+            document.querySelector(`.storyimg${len-1-currentIndex}`).style.display = "none"
+            document.querySelector(`#fill${currentIndex}`).style.width = 100 + "%"
+            progress(currentIndex + 1)
+
+            
+        })
+
+
+
+
+    </script>

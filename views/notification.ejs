@@ -1,0 +1,25 @@
+<% include ./partials/header.ejs %>
+<div class="w-full h-screen bg-zinc-900 text-white py-5 relative flex flex-col">
+    <h1 class="text-center font-semibold text-lg w-full">Notifications
+      <a href="/feed"><i class="ri-arrow-left-s-line absolute left-6"></i></a>
+      <a href="/clearallnotification"><i class="ri-delete-bin-line absolute right-6 font-light"></i></a>
+  </h1>
+  <div class="notifications mb-10 w-full mt-2 flex-1 overflow-y-auto">
+    <%loggedUser.notifications.forEach(function(notification){%>
+        <div class="notification flex gap-4 p-2 px-5 mb-2 items-center">
+            <div class="w-[9vw] aspect-square overflow-hidden bg-sky-100 rounded-full ">
+                <img class="w-full h-full object-cover" src="/images/uploads/<%=notification.fromUser.profileImg%>" alt="">
+            </div>
+              
+
+            <h3 class="font-semibold w-2/3"><%=notification.content%></h3>
+            <%if(notification.post){%>
+                <div class="w-[9vw] aspect-square overflow-hidden bg-sky-100">
+                    <img class="w-full h-full object-cover" src="/images/uploads/<%=notification.post.media%>" alt="">
+                </div>
+            <%}%>
+        </div>
+    <%})%>
+  </div> 
+  </div>
+<% include ./partials/footer.ejs %>

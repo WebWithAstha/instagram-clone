@@ -1,0 +1,114 @@
+<% include ./partials/header.ejs %>
+    <div class="w-full min-h-screen bg-zinc-900 text-white relative pb-16 pt-12">
+        <h1 class="text-center py-3 font-semibold text-lg bg-zinc-800 fixed top-0 left-0 w-full z-10">Comments
+            <a href="javascript:history.back()"><i class="ri-arrow-left-s-line absolute left-6"></i></a>
+        </h1>
+        <div class="comments py-2 px-1 overflow-y-auto">
+            <%comments.forEach(function(comment){%>
+                <div class="comment flex gap-2 p-2">
+                    <div class="w-[10vw] h-[10vw] bg-sky-100 overflow-hidden rounded-full mt-2 shrink-0">
+                        <img class="w-full h-full object-cover" src="/images/uploads/<%=comment.user.profileImg%>"
+                            alt="">
+                    </div>
+                    <div class="content">
+                        <h2 class="font-semibold">
+                            <%=comment.user.username%> <span class="opacity-50 ml-2 text-[3.3vw]">
+                                    <%=comment.duration%>
+                                </span>
+                        </h2>
+                        <p>
+                            <%=comment.text%>
+                        </p>
+                        <h5 data-commentId="<%=comment._id%>" class="reply-btn opacity-50 text-[3.3vw] w-max">reply</h5>
+
+                        <%if(comment.replies.length>0){%>
+                            <h5 data-commentId="<%=comment._id%>"
+                                class="view-reply text-[3.3vw] mt-2 flex items-center gap-2">
+                                <hr class="w-10 opacity-70 inline-block"> View <%=comment.replies.length%>
+                                    <%= comment.replies.length> 1 ? 'replies' : 'reply' %>
+                            </h5>
+                            <%}%>
+                    </div>
+
+                </div>
+
+                <%})%>
+
+        </div>
+
+        <form action="/comment/<%=postId%>" method="post"
+            class="form flex p-3 gap-2 border-t border-zinc-500 bg-zinc-900 items-center fixed bottom-0 left-0 w-full">
+            <div class="w-[10vw] h-[10vw] overflow-hidden rounded-full shrink-0">
+                <img class="object-cover w-full h-full" src="/images/uploads/<%=loggedUser.profileImg%>">
+            </div>
+            <div class="w-full flex gap-1">
+                <input name="comment" class="w-full pl-2 bg-transparent outline-none border-1 border-white text-lg"
+                    type="text" placeholder="Add a comment...">
+                <input type="radio" hidden class="inp-comment" name="type" value="comment" checked id="">
+                <input type="radio" hidden class="inp-reply" name="type" value="reply" id="">
+                <button type="submit"><i class="ri-send-plane-2-fill"></i></button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+
+        let replyDiv;
+        let replyLen = 0;
+        document.querySelector(".comments").addEventListener("click", function (dets) {
+
+            if (dets.target.classList.contains("reply-btn")) {
+                document.querySelector('input').setAttribute('placeholder', 'Add a reply...');
+                document.querySelector('input').focus();
+                document.querySelector('.inp-comment').removeAttribute('checked')
+                document.querySelector('.inp-reply').setAttribute('checked', 'true');
+                document.querySelector('.inp-reply').value = dets.target.dataset.commentid
+
+            }
+
+            if (dets.target.classList.contains("view-reply")) {
+
+
+                replyDiv = document.createElement("div");
+                replyDiv.setAttribute("class", "replies py-2")
+
+                fetch(`/reply/${dets.target.dataset.commentid}`)
+                    .then(raw => raw.json())
+                    .then(function (replies) {
+                        replyLen = replies.length;
+                        replies.forEach(function (reply) {
+                            replyDiv.innerHTML += `<div class="reply flex gap-2 p-2">
+                            <div class="w-[10vw] h-[10vw] bg-sky-100 overflow-hidden rounded-full mt-2 shrink-0">
+                                <img class="w-full h-full object-cover" src="/images/uploads/${reply.user.profileImg}"
+                                    alt="">
+                            </div>
+                            <div class="content">
+                                <h2 class="font-semibold">
+                                    ${reply.user.username} <span class="opacity-50 ml-2 text-[3.3vw]">
+                                            1h
+                                        </span>
+                                </h2>
+                                <p>
+                                    ${reply.text}
+                                </p>
+                                <h5 data-commentId="" class="reply opacity-50 text-[3.3vw] w-max">reply</h5>
+                            </div>  
+                            </div>`
+                        });
+                        dets.target.parentNode.insertBefore(replyDiv, dets.target)
+                        dets.target.className = "hide-reply text-[3.3vw] mt-2 flex items-center gap-2"
+                        dets.target.innerHTML = `<hr class="w-10 opacity-70 inline-block"> Hide ${replyLen > 1 ? 'replies' : 'reply'}`
+
+                    })
+
+            } else if (dets.target.classList.contains('hide-reply')) {
+                dets.target.parentNode.removeChild(dets.target.parentNode.querySelector('.replies'));
+                dets.target.className = "view-reply text-[3.3vw] mt-2 flex items-center gap-2"
+                dets.target.innerHTML = `<hr class="w-10 opacity-70 inline-block"> View ${replyLen > 1 ? replyLen + ' replies' : replyLen + ' reply'}`
+            }
+        })
+
+
+
+    </script>
+    <% include ./partials/footer.ejs %>

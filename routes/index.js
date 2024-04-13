@@ -53,18 +53,13 @@ router.get('/edit', isLoggedIn, async function (req, res) {
   const loggedUser = await userModel.findOne({ username: req.session.passport.user })
   res.render('edit', { footer: true, loggedUser });
 });
-router.post('/editprofile', isLoggedIn, upload.single('image'), async function (req, res) {
-  const loggedUser = await userModel.findOne({ username: req.session.passport.user })
-  loggedUser.profileImg = req.file.filename
-  await loggedUser.save()
-  res.redirect('/edit')
-});
-router.post('/update', isLoggedIn, async function (req, res) {
+
+router.post('/update', isLoggedIn, upload.single('image'), async function (req, res) {
   await messageModel.updateMany({receiver: req.session.passport.user},{receiver: req.body.username},{new:true})
   await messageModel.updateMany({sender: req.session.passport.user},{sender: req.body.username},{new:true})
   const loggedUser = await userModel.findOneAndUpdate(
     { username: req.session.passport.user },
-    { username: req.body.username, name: req.body.name, bio: req.body.bio },
+    { username: req.body.username, name: req.body.name,profileImg: req.file.filename, bio: req.body.bio },
     { new: true }
   )
 

@@ -68,12 +68,11 @@ router.post('/update', isLoggedIn, async function (req, res) {
     { new: true }
   )
 
-  req.login(user, function (err) {
+  req.login(loggedUser, function (err) {
     if (err) throw err;
     res.redirect("/profile");
   });
 
-  res.redirect('/profile')
 });
 router.get('/upload', isLoggedIn, async function (req, res) {
   const loggedUser = await userModel.findOne({ username: req.session.passport.user })

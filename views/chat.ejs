@@ -105,16 +105,14 @@
         socket.emit('join-server', '<%=loggedUser.username%>')
 
         function appendOutgoingMessage(msg) {
-
             document.querySelector('.chats').innerHTML += `
             <div class="outgoing bg-blue-500 w-fit max-w-[70%] p-1 px-3 rounded-3xl ml-auto mb-1.5">${msg}</div>
             `
         }
+
         userprofile = '<%=user.profileImg%>'
 
-
         function appendIncomingMessage(msg) {
-
             document.querySelector('.chats').innerHTML += `
             <div class="flex gap-1 mb-1.5 items-center">
                 <div class="w-[8vw] h-[8vw] bg-sky-100 overflow-hidden rounded-full ">
@@ -129,15 +127,13 @@
             const inp = document.querySelector('input')
             if (inp.value === '') return
             appendOutgoingMessage(inp.value)
-
+            scrollToBottom()
             socket.emit("send-private-message", {
                 sender: '<%=loggedUser.username%>',
                 receiver: '<%=user.username%>',
                 message: inp.value
             })
             inp.value = ''
-
-
         }
 
         function onEnter(event) {
@@ -145,10 +141,16 @@
                 sendMessage()
             }
         }
+
         socket.on('receive-private-message', messageObject => {
             appendIncomingMessage(messageObject.message)
+            scrollToBottom()
         })
 
+        function scrollToBottom() {
+            const chatContainer = document.querySelector('.chats')
+            chatContainer.scrollTop = chatContainer.scrollHeight
+        }
 
     </script>
     <% include ./partials/footer.ejs %>
